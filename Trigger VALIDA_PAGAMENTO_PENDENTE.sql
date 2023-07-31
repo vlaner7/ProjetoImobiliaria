@@ -1,0 +1,17 @@
+DELIMITER //
+CREATE TRIGGER VALIDA_PAGAMENTO_PENDENTE 
+BEFORE UPDATE ON IMOVEL FOR EACH ROW 
+
+BEGIN
+	IF OLD.STATUS_PAGAMENTO != 'Q' OR EXISTS (SELECT 1
+											    FROM IMOVEL, STATUS_PAGAMENTO, CLIENTE
+											   WHERE CLIENTE.BLOQFINANC = 'S' 
+												 AND IMOVEL.CPF = CLIENTE.CPF
+												 AND IMOVEL.CPF = STATUS_PAGAMENTO.CPF
+                                                 AND IMOVEL.CPF = CLIENTE.CPF
+                                                 AND STATUS_PAGAMENTO.CPF = CLIENTE.CPF) THEN
+                                                                                  
+		SIGNAL SQLSTATE '24824' SET MESSAGE_TEXT = 'OPERAÇÃO NÃO PERMITIDA! VERIFIQUE O STATUS DE PAGAMENTO DO IMÓVEL!';
+    END IF;
+END //
+DELIMITER ;
